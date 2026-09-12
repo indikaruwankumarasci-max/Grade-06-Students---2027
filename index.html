@@ -5,16 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>සිසුන් ඇතුලත් කිරීමේ පෝරමය</title>
   <style>
-    /* නිල් පැහැයේ සිට ලා රතු පැහැයට ස්වයංක්‍රීයව වෙනස් වන Animation එක */
-    @keyframes bgChange {
-      0% { background-color: #004080; }
-      50% { background-color: #ff9999; }
-      100% { background-color: #004080; }
+    /* වර්ණ කිහිපයක් අතර ස්වයංක්‍රීයව බිලින්ක් (Transition) වන Animation එක */
+    @keyframes multiColorBg {
+      0%   { background-color: #004080; } /* තද නිල් */
+      25%  { background-color: #ff8080; } /* ලා රතු / පින්ක් */
+      50%  { background-color: #4b0082; } /* දම් පාට */
+      75%  { background-color: #008080; } /* තේ කොළ පාට */
+      100% { background-color: #004080; } /* නැවත තද නිල් */
     }
 
     body {
       font-family: Arial, sans-serif;
-      animation: bgChange 6s infinite alternate;
+      animation: multiColorBg 10s infinite linear;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -74,7 +76,6 @@
       background-color: #218838;
     }
 
-    /* Feedback පණිවිඩය සඳහා Styling */
     #feedback {
       margin-top: 15px;
       padding: 10px;
@@ -104,7 +105,7 @@
   <form id="studentForm">
     <div class="form-group">
       <label>ශිෂ්‍යයාගේ නම:</label>
-      <input type="text" name="studentName" required>
+      <input type="text" id="studentName" name="studentName" required>
     </div>
     
     <div class="form-group">
@@ -123,19 +124,18 @@
     </div>
     
     <div class="form-group">
-      <label>වට්ස්ඇප් දුරකථන අංකය:</label>
-      <input type="tel" name="whatsapp" placeholder="07X XXXXXXX" required>
+      <label>වට්ස්ඇප් දුරකථන අංකය (උදා: 0712345678):</label>
+      <input type="tel" id="whatsapp" name="whatsapp" placeholder="07X XXXXXXX" required>
     </div>
     
     <button type="submit" id="submitBtn">ඇතුලත් කරන්න</button>
   </form>
 
-  <!-- Feedback සටහන පෙන්නුම් කරන ස්ථානය -->
   <div id="feedback"></div>
 </div>
 
 <script>
-  // Google Apps Script Web App URL එක මෙතැනට paste කරන්න
+  // Google Apps Script Web App URL එක මෙතැනට දමන්න
   const scriptURL = 'https://script.google.com/macros/s/AKfycbygdJ5lNRfsDE2ZD7ox_1FC6U0UMoRFqpaYcYPyfHGurnUcG45lHTqQjSpintLK4hbjiw/exec';
   
   const form = document.forms['studentForm'];
@@ -147,11 +147,30 @@
     submitBtn.disabled = true;
     submitBtn.innerText = 'යවමින් පවතී...';
 
+    // Form එකේ තොරතුරු ලබාගැනීම
+    const studentName = document.getElementById('studentName').value;
+    let phoneNum = document.getElementById('whatsapp').value.trim();
+
+    // දුරකථන අංකය ජාත්‍යන්තර ආකෘතියට (International Format) සකස් කිරීම
+    if(phoneNum.startsWith('0')) {
+      phoneNum = '94' + phoneNum.substring(1);
+    }
+
     fetch(scriptURL, { method: 'POST', body: new FormData(form)})
       .then(response => {
         feedback.className = 'success';
-        feedback.innerText = 'ඔබගේ තොරතුරු සාර්ථකව ඇතුලත් කරන ලදී. ස්තූතියි!';
+        feedback.innerText = 'ඔබගේ තොරතුරු සාර්ථකව ඇතුලත් කරන ලදී! WhatsApp පණිවිඩය සූදානම් වේ...';
         feedback.style.display = 'block';
+
+        // WhatsApp හරහා යැවීමට අවශ්‍ය පණිවිඩය සකස් කිරීම
+        const message = `ආයුබෝවන් ${studentName},\nඔබගේ තොරතුරු සාර්ථකව පද්ධතියට ඇතුලත් විය.\nස්තූතියි!`;
+        const whatsappURL = `https://wa.me/${phoneNum}?text=${encodeURIComponent(message)}`;
+
+        // තත්පර 1.5 කට පසු ස්වයංක්‍රීයව WhatsApp වෙත යොමු කිරීම
+        setTimeout(() => {
+          window.open(whatsappURL, '_blank');
+        }, 1500);
+
         form.reset();
         submitBtn.disabled = false;
         submitBtn.innerText = 'ඇතුලත් කරන්න';
