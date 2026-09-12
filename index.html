@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2027 වර්ෂය සදහා 06 ශ්‍රේණිය විද්‍යාව පන්තියට නවක සිසුන් ඇතුලත් කිරීමේ පෝරමය</title>
+  <title>සිසුන් ඇතුලත් කිරීමේ පෝරමය</title>
   <style>
-    /* වර්ණ කිහිපයක් අතර ස්වයංක්‍රීයව බිලින්ක් (Transition) වන Animation එක */
+    /* වර්ණ කිහිපයක් අතර බිලින්ක් වන Animation එක */
     @keyframes multiColorBg {
-      0%   { background-color: #004080; } /* තද නිල් */
-      25%  { background-color: #ff8080; } /* ලා රතු / පින්ක් */
-      50%  { background-color: #4b0082; } /* දම් පාට */
-      75%  { background-color: #008080; } /* තේ කොළ පාට */
-      100% { background-color: #004080; } /* නැවත තද නිල් */
+      0%   { background-color: #004080; }
+      25%  { background-color: #ff8080; }
+      50%  { background-color: #4b0082; }
+      75%  { background-color: #008080; }
+      100% { background-color: #004080; }
     }
 
     body {
@@ -78,8 +78,8 @@
 
     #feedback {
       margin-top: 15px;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 15px;
+      border-radius: 6px;
       display: none;
       text-align: center;
       font-weight: bold;
@@ -91,17 +91,26 @@
       border: 1px solid #c3e6cb;
     }
 
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+    .wa-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #25D366;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .wa-btn:hover {
+      background-color: #1eb854;
     }
   </style>
 </head>
 <body>
 
 <div class="form-container">
-  <h2>2027 වර්ෂය සදහා 06 ශ්‍රේණිය විද්‍යාව පන්තියට නවක සිසු සිසුවියන් ඇතුලත් කිරීමේ පෝරමය</h2>
+  <h2>සිසුන් ඇතුලත් කිරීමේ පෝරමය</h2>
   <form id="studentForm">
     <div class="form-group">
       <label>ශිෂ්‍යයාගේ නම:</label>
@@ -124,7 +133,7 @@
     </div>
     
     <div class="form-group">
-      <label>වට්ස්ඇප් දුරකථන අංකය (උදා: 0712345678):</label>
+      <label>වට්ස්ඇප් දුරකථන අංකය:</label>
       <input type="tel" id="whatsapp" name="whatsapp" placeholder="07X XXXXXXX" required>
     </div>
     
@@ -135,7 +144,7 @@
 </div>
 
 <script>
-  // Google Apps Script Web App URL එක මෙතැනට දමන්න
+  // ඔබගේ Google Apps Script Web App URL එක පහත යොදන්න
   const scriptURL = 'https://script.google.com/macros/s/AKfycbygdJ5lNRfsDE2ZD7ox_1FC6U0UMoRFqpaYcYPyfHGurnUcG45lHTqQjSpintLK4hbjiw/exec';
   
   const form = document.forms['studentForm'];
@@ -147,41 +156,50 @@
     submitBtn.disabled = true;
     submitBtn.innerText = 'යවමින් පවතී...';
 
-    // Form එකේ තොරතුරු ලබාගැනීම
     const studentName = document.getElementById('studentName').value;
     let phoneNum = document.getElementById('whatsapp').value.trim();
 
-    // දුරකථන අංකය ජාත්‍යන්තර ආකෘතියට (International Format) සකස් කිරීම
+    // දුරකථන අංකය ජාත්‍යන්තර ආකෘතියට සකස් කිරීම
     if(phoneNum.startsWith('0')) {
       phoneNum = '94' + phoneNum.substring(1);
     }
 
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => {
-        feedback.className = 'success';
-        feedback.innerText = 'ඔබගේ තොරතුරු සාර්ථකව ඇතුලත් කරන ලදී! WhatsApp පණිවිඩය සූදානම් වේ...';
-        feedback.style.display = 'block';
+    // Google Sheet එකට දත්ත යැවීම
+    fetch(scriptURL, { 
+      method: 'POST', 
+      mode: 'no-cors',
+      body: new FormData(form)
+    })
+    .then(() => {
+      // WhatsApp පණිවිඩය සූදානම් කිරීම
+      const message = `ආයුබෝවන් ${studentName},\nඔබගේ තොරතුරු සාර්ථකව පද්ධතියට ඇතුලත් විය.\nස්තූතියි!`;
+      const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNum}&text=${encodeURIComponent(message)}`;
 
-        // WhatsApp හරහා යැවීමට අවශ්‍ය පණිවිඩය සකස් කිරීම
-        const message = `ආයුබෝවන් ${studentName},\nඔබගේ තොරතුරු සාර්ථකව පද්ධතියට ඇතුලත් විය.\nස්තූතියි!`;
-        const whatsappURL = `https://wa.me/${phoneNum}?text=${encodeURIComponent(message)}`;
+      // Feedback පණිවිඩය සහ WhatsApp Link එක පෙන්වීම
+      feedback.className = 'success';
+      feedback.innerHTML = `
+        ඔබගේ තොරතුරු සාර්ථකව ඇතුලත් කරන ලදී!<br><br>
+        <a href="${whatsappURL}" target="_blank" class="wa-btn">
+           WhatsApp පණිවිඩය යවන්න
+        </a>
+      `;
+      feedback.style.display = 'block';
 
-        // තත්පර 1.5 කට පසු ස්වයංක්‍රීයව WhatsApp වෙත යොමු කිරීම
-        setTimeout(() => {
-          window.open(whatsappURL, '_blank');
-        }, 1500);
+      // ස්වයංක්‍රීයව WhatsApp Open කිරීමට උත්සාහ කිරීම
+      window.open(whatsappURL, '_blank');
 
-        form.reset();
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'ඇතුලත් කරන්න';
-      })
-      .catch(error => {
-        feedback.className = 'error';
-        feedback.innerText = 'යම් දෝෂයක් සිදු විය! කරුණාකර නැවත උත්සාහ කරන්න.';
-        feedback.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'ඇතුලත් කරන්න';
-      });
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'ඇතුලත් කරන්න';
+    })
+    .catch(error => {
+      console.error('Error!', error.message);
+      feedback.className = 'error';
+      feedback.innerText = 'තොරතුරු යැවීමේදී දෝෂයක් සිදු විය.';
+      feedback.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'ඇතුලත් කරන්න';
+    });
   });
 </script>
 
